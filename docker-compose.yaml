@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: food-delivery-db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=fooddelivery
+    networks:
+      - food-delivery-network
+
+  backend:
+    build: ./backend
+    container_name: food-delivery-backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    networks:
+      - food-delivery-network
+
+  frontend:
+    build: ./frontend
+    container_name: food-delivery-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000
+    depends_on:
+      - backend
+    networks:
+      - food-delivery-network
+
+volumes:
+  mongo-data:
+
+networks:
+  food-delivery-network:
+    driver: bridge
