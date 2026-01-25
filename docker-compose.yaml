@@ -15,6 +15,7 @@ services:
 
   backend:
     build: ./backend
+    image: adamhamdi841/food-delivery-backend:latest
     container_name: food-delivery-backend
     ports:
       - "5000:5000"
@@ -28,6 +29,7 @@ services:
 
   frontend:
     build: ./frontend
+    image: adamhamdi841/food-delivery-frontend:latest
     container_name: food-delivery-frontend
     ports:
       - "3000:3000"
@@ -37,10 +39,51 @@ services:
       - backend
     networks:
       - food-delivery-network
+  # SonarQube pour SAST 
+  sonarqube: 
+    image: sonarqube:lts-community 
+    container_name: food-sonarqube 
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true 
+    ports:
+      - "9000:9000" 
+    volumes: 
+      - sonarqube_data:/opt/sonarqube/data 
+      - sonarqube_logs:/opt/sonarqube/logs 
+    networks: 
+      - food-delivery-network 
+  # Prometheus pour le monitoring 
+  prometheus: 
+    image: prom/prometheus:latest 
+    container_name: food-prometheus 
+    ports: 
+      - "9090:9090" 
+    volumes: 
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml 
+    networks: 
+      - food-delivery-network 
+  # Grafana pour les dashboards 
+  grafana: 
+    image: grafana/grafana:latest 
+    container_name: food-grafana 
+    ports: 
+      - "3001:3000" 
+    environment: 
+      - GF_SECURITY_ADMIN_PASSWORD=admin 
+    volumes: 
+      - grafana_data:/var/lib/grafana 
+    networks: 
+      - food-delivery-network    
 
 volumes:
   mongo-data:
+  sonarqube_data: 
+  sonarqube_logs: 
+  grafana_data:
 
 networks:
   food-delivery-network:
     driver: bridge
+
+ 
+   
